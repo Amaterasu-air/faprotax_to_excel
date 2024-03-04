@@ -6,7 +6,7 @@ import msvcrt
 import os
 
 
-# 文件预处理，去除前端无效信息
+# File preprocessing: Remove irrelevant information at the front end.
 def dealtxt(infile):
     input_file = infile
     output_file = 'deal.txt'
@@ -15,23 +15,23 @@ def dealtxt(infile):
     with open(input_file, 'r') as f_in:
         lines = f_in.readlines()
 
-    # 查找目标字段所在行的索引
+    # Find the index of the row containing the target field.
     start_index = None
     for i, line in enumerate(lines):
         if target_field in line:
             start_index = i
             break
 
-    # 截取目标字段之后的内容
+    # Remove the invalid content before the target content.
     if start_index is not None:
         new_content = ''.join(lines[start_index + 1:])
 
-        # 将新内容写入输出文件
+        # Write the new content and output it to a file.
         with open(output_file, 'w') as f_out:
             f_out.write(new_content)
 
 
-# 打开文件，i为传入文件名
+# Open the file with the filename passed in as "i".
 def open_file(i):
     filenames = i
     with open(filenames) as f:
@@ -39,36 +39,36 @@ def open_file(i):
     return files
 
 
-# 根据字典生成Excel文件
-def createxl(filenames):
-    # 创建DataFrame
+# Generate Excel file according to the dictionary.
+def createxl(filenames,name):
+    # Create a DataFrame.
     df = pd.DataFrame.from_dict(filenames, orient='index')
 
-    # 创建Excel Writer对象
-    excel_writer = pd.ExcelWriter('example.xlsx', engine='openpyxl')
+    # Create an Excel Writer object.
+    excel_writer = pd.ExcelWriter(name+'.xlsx', engine='openpyxl')
 
-    # 将 DataFrame 写入 Excel 文件
+    # Write the DataFrame to an Excel file.
     df.to_excel(excel_writer, index_label='OTU', header=True)
 
-    # 保存 Excel 文件
+    # Save the Excel file.
     excel_writer.close()
 
 
-# 修改第一列，第二列的列名
+# Modify the column names of the first and second columns.
 def rename():
-    workbook = openpyxl.load_workbook('example.xlsx')
+    workbook = openpyxl.load_workbook('OTU_功能简写.xlsx')
     worksheet = workbook['Sheet1']
     worksheet.cell(row=1, column=1, value='OTU')
     worksheet.cell(row=1, column=2, value='function')
-    workbook.save('example.xlsx')
+    workbook.save('OTU_功能简写.xlsx')
 
 
-# 根据Excel文件创建字典
+# Create a dictionary based on an Excel file.
 def createdict(filename):
     df = pd.read_excel(filename)
-    # 创建一个空字典来存储转换后的数据
+    # Create an empty dictionary to store the converted data.
     data_dict = {}
-    # 循环遍历DataFrame的每一行，将第一列作为键，第二列和第三列的值组成列表作为值
+    # Iterate over each row of the DataFrame, using the first column as the key and creating a list of the second and third columns as the values.
     for index, row in df.iterrows():
         key = row['key']
         value = [row['value1'], row['value2'], row['value3']]
@@ -76,7 +76,7 @@ def createdict(filename):
     return data_dict
 
 
-# 去重并排序
+# Remove duplicates and sort.
 def sort_remove(inputs, order):
     sort = []
     for i in order:
@@ -87,7 +87,7 @@ def sort_remove(inputs, order):
     return sort
 
 
-# 去除无用OTU
+# Remove invalid otu
 def remove_otu(df):
     rows_to_remove = []
     for index, row in df.iterrows():
@@ -97,7 +97,7 @@ def remove_otu(df):
     return df
 
 
-# 建立OTU:功能的键值对
+# Establish key-value pairs for OTU: functions
 def tranfun(input):
     example = pd.read_excel(input)
     data_dict = {}
@@ -106,23 +106,27 @@ def tranfun(input):
     return data_dict
 
 
-# dataframe转换为excel
-def createdfxl(filenames):
-    # 创建DataFrame
+# Convert dataframe to excel
+def createdfxl(filenames,outname):
+    # Create DataFrame.
     df = pd.DataFrame(filenames)
-    # 创建Excel Writer对象
-    excel_writer = pd.ExcelWriter('example_tax.xlsx', engine='openpyxl')
-    # 将 DataFrame 写入 Excel 文件
+    # Create Excel Writer object.
+    excel_writer = pd.ExcelWriter(outname+'.xlsx', engine='openpyxl')
+    # Write DataFrame to Excel file.
     df.to_excel(excel_writer, index=False)
-    # 保存 Excel 文件
+    # Save and close excel
     excel_writer.close()
 
 
+
+
+
 original_directory = input('请输入工作目录：')
-# 获取当前路径下的所有文件夹列表
+
+# Get a list of all folders in the current directory.
 folders = [f for f in os.listdir(original_directory) if os.path.isdir(os.path.join(original_directory, f))]
 if not folders:
-    txt_name = glob.glob((os.path.join(original_directory, "*.txt"))) # 如果my_list为空，条件成立
+    txt_name = glob.glob((os.path.join(original_directory, "*.txt"))) # If my_list is empty, the condition is true.
     folders.append(txt_name[0])
 for item in folders:
     os.chdir(original_directory)
@@ -130,43 +134,47 @@ for item in folders:
         dealtxt(item)
     else:
         folder_path = os.path.join(original_directory, item)
-        os.chdir(folder_path)  # 切换到文件夹
+        os.chdir(folder_path)  # Switch to a folder.
         txt_files = glob.glob("*.txt")
-        txt = txt_files[0]  # 获取第一个txt文件
-        dealtxt(txt)  # 对txt文件进行前处理输出为deal.txt
+        txt = txt_files[0]  # Get the first txt file.
+        dealtxt(txt)  # Preprocess the txt file and output it as 'deal.txt'
 
-    files = open_file('deal.txt')  # 打开处理后的txt存入file
+    files = open_file('deal.txt')  # Open the processed txt and save it to 'file'.
 
-    # 正则表达式检索出所有的OTU并转换为list
+    # Retrieve all OTU using regular expressions and convert them into 'list'.
     otuall = list(set(re.findall(r'OTU_[0-9]+', files)))
-    # 切片筛选不同功能，以“#”分隔
+    # Slice and filter different functionalities using "#" as a delimiter.
     otufun = files.split('#')
-    del otufun[0]  # 文件处理，删除第一行空白值
+    del otufun[0]  # File processing, remove the first line with empty values.
 
-    # for循环删除不需要的OTU
-    df = pd.read_excel('字段替换.xlsx')
-    list1 = df['key'].tolist()
+    # For loop to remove unwanted OTUs.
+    ziduan = pd.read_excel('字段替换.xlsx')
+    allfuns = ziduan['key'].tolist()
     otufun_to_remove = []
     for remove in otufun:
-        if not any(item in remove for item in list1):
+        if not any(item in remove for item in allfuns):
             otufun_to_remove.append(remove)
     for remove in otufun_to_remove:
         otufun.remove(remove)
 
-    # 创建空白字典储存OTU：function的键值对
+    # Create an empty dictionary to store 'OTU:function' key-value pairs.
     otufuns = {}
-    # 创建功能代码替换字典
+    otuws = {}
+    # Create a dictionary for code replacements.
     my_dict = createdict('字段替换.xlsx')
-    # for循环筛选OTU功能
+    # For loop to filter OTU functions.
     order = ['C', 'H', 'O', 'N', 'S', 'Mn', 'Fe', 'As', 'OX', 'RX', 'FX']  # 功能顺序
     for o in otuall:
         key = o
         funf = []
+        funw = []
+        pattern = re.compile(r'\b' + re.escape(o) + r'\b')
         for otu in otufun:
-            if o in otu:
+            if pattern.search(otu):
                 match = re.search(r'(\w+) \(\d+ records\)', otu)
                 match = match.group(1)
-                # 下方循环为将功能替换为相应代号
+                funw.append(match)
+                # Replace 'functions' with corresponding codes.
                 if match in my_dict:
                     for item in my_dict[match]:
                         if isinstance(item, str):
@@ -174,40 +182,42 @@ for item in folders:
             else:
                 pass
 
-        remove_string = sort_remove(funf, order)  # 排序并删除，生成list
-        result_string = ''.join(remove_string)  # list转换为字符串
-        otufuns[key] = result_string  # 将OTU：function的键值对存入字典otufuns
+        remove_string = sort_remove(funf, order)  # Sort and remove duplicates and generating 'list'.
+        result_string = ''.join(remove_string)  # Convert the 'list' to a 'string'.
+        otufuns[key] = result_string  # Store the key-value pairs of 'OTU:function' in the 'dictionary otufuns'.
+        otuws[key] = funw  # Store the key-value pairs of 'OTU:function' (complete) in the 'dictionary otuws'.
 
-    createxl(otufuns)  # 将otufuns的字典转换为excel
-    rename()  # 修改前两列的名字为“OTU”，”function”
+    createxl(otufuns,'OTU_功能简写')  # Convert the 'otufuns dictionary' to Excel.
+    createxl(otuws, 'OTU_完整功能')  # Convert the 'otuws dictionary' to Excel.
 
-    # .xls需转换为.xlsx
-    taxname = glob.glob('*taxonomy*.xlsx')  # 使用 glob.glob() 查找带有“taxonomy”字段的xlsx文件
-    tax = pd.read_excel(taxname[0])  # 此为存有taxonomy的dataframe
-    tax = remove_otu(tax)  # 去除未被匹配到的OTU
+    rename()  # Modify the names of the first two columns to "OTU" and "function".
 
-    example = tranfun('example.xlsx')  # 建立OTU:功能的键值对
+    # Please convert .xls to .xlsx file format.
+    taxname = glob.glob('*taxonomy*.xlsx')  # Use glob.glob() to find xlsx files with the "taxonomy" field.
+    tax = pd.read_excel(taxname[0])
+    tax = remove_otu(tax)  # Remove the unmatched OTUs.
 
-    tax['function'] = tax[tax.columns[0]].map(example)  # 将function与OTU匹配加入到tax中
+    example = tranfun('OTU_功能简写.xlsx')  # Establish key-value pairs of OTU:function.
 
-    # 使用insert()方法将最后一列（function）插入到第2列的位置
+    tax['function'] = tax[tax.columns[0]].map(example)  # Match 'functions' with 'OTUs' and add them to the 'tax'.
+
+    # Use the insert() method to insert the last column (function) into the second column position.
     last_column = tax.pop(tax.columns[-1])
     tax.insert(1, last_column.name, last_column)
-    # 使用insert()方法将最后一列（taxonomy）插入到第3列的位置
-    last_column = tax.pop(tax.columns[-1])
+    # Use the insert() method to insert the last column (taxonomy) into the third column
+    index_of_taxonomy = tax.columns.get_loc('taxonomy')
+    last_column = tax.pop(tax.columns[index_of_taxonomy])
     tax.insert(2, last_column.name, last_column)
 
-    createdfxl(tax)  # tax转换为example_tax.xlsx
 
-    tax.set_index(tax.columns[0], inplace=True)  # 将OTU设置为行索引
-
-    # tax写入excel
+    # write tax to excel
     writer = pd.ExcelWriter('report.xlsx')
-    result_tax = tax.groupby('function', as_index=False).sum()  # 以function作为标签分类并对OTU数量求和
-    result_tax = result_tax.drop(columns='taxonomy')  # 删除taxonomy列
-    result_tax.to_excel(writer, '汇总', index_label='NUM', header=True)  # 写入excel
-    writer.close()  # 关闭excel
+    result_tax = tax.groupby('function', as_index=False).sum()  # Use function as the label classification and sum the number of OTUs
+    result_tax = result_tax.drop(columns='taxonomy')  # Delete 'taxonomy' column
+    result_tax.to_excel(writer, '汇总', index_label='NUM', header=True)  # Write to excel
+    writer.close()  # close excel
     os.chdir(original_directory)
 
+#Running successfully, please press any key to exit~
 print("运行成功，请按任意键退出~")
 ord(msvcrt.getch())
